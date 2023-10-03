@@ -24,7 +24,7 @@ func init() {
 	prometheus.MustRegister(HTTPLatency)
 }
 
-func WireUp(ctx context.Context, declineAmount float32, tracer stdopentracing.Tracer, serviceName string) (http.Handler, log.Logger) {
+func WireUp(ctx context.Context, declineAmount float32, authorizer string, tracer stdopentracing.Tracer, serviceName string) (http.Handler, log.Logger) {
 	// Log domain.
 	var logger log.Logger
 	{
@@ -36,7 +36,7 @@ func WireUp(ctx context.Context, declineAmount float32, tracer stdopentracing.Tr
 	// Service domain.
 	var service Service
 	{
-		service = NewAuthorisationService(declineAmount)
+		service = NewAuthorisationService(declineAmount, authorizer)
 		service = LoggingMiddleware(logger)(service)
 	}
 

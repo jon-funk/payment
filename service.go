@@ -28,14 +28,16 @@ type Health struct {
 // NewFixedService returns a simple implementation of the Service interface,
 // fixed over a predefined set of socks and tags. In a real service you'd
 // probably construct this with a database handle to your socks DB, etc.
-func NewAuthorisationService(declineOverAmount float32) Service {
+func NewAuthorisationService(declineOverAmount float32, authorizer string) Service {
 	return &service{
 		declineOverAmount: declineOverAmount,
+		authorizer: authorizer,
 	}
 }
 
 type service struct {
 	declineOverAmount float32
+	authorizer string
 }
 
 func (s *service) Authorise(amount float32) (Authorisation, error) {
@@ -45,11 +47,14 @@ func (s *service) Authorise(amount float32) (Authorisation, error) {
 	if amount < 0 {
 		return Authorisation{}, ErrInvalidPaymentAmount
 	}
+	if s.authorizer == "" {
+		return Authorisation{}, ErrNoAuthorizer
+	}
 	authorised := false
 	message := "Payment declined"
 	if amount <= s.declineOverAmount {
 		authorised = true
-		message = "Payment authorised"
+		message = fmt.Sprintf("Payment authorised by %s", s.authorizer)
 	} else {
 		message = fmt.Sprintf("Payment declined: amount exceeds %.2f", s.declineOverAmount)
 	}
@@ -67,3 +72,4 @@ func (s *service) Health() []Health {
 }
 
 var ErrInvalidPaymentAmount = errors.New("Invalid payment amount")
+var ErrNoAuthorizer = errors.New("No authorizer supplied for payment")

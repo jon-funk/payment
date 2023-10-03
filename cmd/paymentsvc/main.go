@@ -27,6 +27,8 @@ func main() {
 		zip           = flag.String("zipkin", os.Getenv("ZIPKIN"), "Zipkin address")
 		declineAmount = flag.Float64("decline", 105, "Decline payments over certain amount")
 	)
+	authorizer		:= os.Getenv("AUTH_BY")
+
 	flag.Parse()
 	var tracer stdopentracing.Tracer
 	{
@@ -74,11 +76,11 @@ func main() {
 	errc := make(chan error)
 	ctx := context.Background()
 
-	handler, logger := payment.WireUp(ctx, float32(*declineAmount), tracer, ServiceName)
+	handler, logger := payment.WireUp(ctx, float32(*declineAmount), authorizer, tracer, ServiceName)
 
 	// Create and launch the HTTP server.
 	go func() {
-		logger.Log("transport", "HTTP", "port", *port)
+		logger.Log("transport", "HTTP", "port", *port, "Authorizer", authorizer)
 		errc <- http.ListenAndServe(":"+*port, handler)
 	}()
 

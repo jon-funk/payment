@@ -72,4 +72,4 @@ func (s *service) Health() []Health {
 }
 
 var ErrInvalidPaymentAmount = errors.New("Invalid payment amount")
-var ErrNoAuthorizer = errors.New("No authorizer supplied for payment")
+var ErrNoAuthorizer = errors.New("No authorizer supplied for payment. Did you set the AUTH_BY environment variable?")
